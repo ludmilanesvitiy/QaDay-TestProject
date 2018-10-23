@@ -1,28 +1,82 @@
-// Protractor configuration file, see link for more information
-// https://github.com/angular/protractor/blob/master/lib/config.ts
+const fs = require('fs');
+const path = require('path');
+const mkdirp  = require('mkdirp');
+const cucumberHtmlReporter = require('cucumber-html-reporter');
 
-const { SpecReporter } = require('jasmine-spec-reporter');
+const options = {
+  theme: 'bootstrap',
+  jsonDir: './e2e-reports/json',
+  output: './e2e-reports/html/cucumber_reporter.html',
+  ignoreBadJsonFile: true,
+  reportSuiteAsScenarios: true,
+  metadata: process.env.SAUCE ? sauceConf : null
+};
 
 exports.config = {
   allScriptsTimeout: 11000,
   specs: [
-    './src/**/*.e2e-spec.ts'
+    '**/*.feature'
   ],
   capabilities: {
     'browserName': 'chrome'
   },
   directConnect: true,
-  baseUrl: 'http://localhost:4200/',
-  framework: 'jasmine',
-  jasmineNodeOpts: {
-    showColors: true,
-    defaultTimeoutInterval: 30000,
-    print: function() {}
+  cucumberOpts: {
+    format: 'json:e2e/reports/json/results.json',
+    require: [
+      '**/*.steps.ts',
+      'support/*.ts'
+    ],
+    tags: "~@Ignore",
   },
-  onPrepare() {
+  framework: 'custom',
+  frameworkPath: require.resolve('protractor-cucumber-framework'),
+  SELENIUM_PROMISE_MANAGER: 0,
+
+
+  onPrepare: () => {
     require('ts-node').register({
-      project: require('path').join(__dirname, './tsconfig.e2e.json')
+      project: require('path').join(__dirname, './tsconfig.json')
     });
-    jasmine.getEnv().addReporter(new SpecReporter({ spec: { displayStacktrace: true } }));
+    const chai = require('chai');
+    const chaiAsPromised = require('chai-as-promised');
+    chai.use(chaiAsPromised);
+    browser.driver.manage().window().setSize(1280, 1024);
+    browser.waitForAngularEnabled(false);
+  },
+
+  beforeLaunch: () => {
+    rimraf(path.resolve(process.cwd(), './e2e/reports/html'));
+    rimraf(path.resolve(process.cwd(), './e2e/downloads'));
+    generateDirs();
+  },
+
+  afterLaunch: function() {
+    new Promise(() => cucumberHtmlReporter.generate(options));
   }
 };
+
+function rimraf(dir_path) {
+  if (fs.existsSync(dir_path)) {
+    fs.readdirSync(dir_path).forEach(entry => {
+      const entry_path = path.join(dir_path, entry);
+      if (fs.lstatSync(entry_path).isDirectory()) {
+        rimraf(entry_path);
+      } else {
+        fs.unlinkSync(entry_path);
+      }
+    });
+    fs.rmdirSync(dir_path);
+  }
+}
+
+function generateDirs() {
+  const jsonReports = path.join(process.cwd(), '/e2e/reports/json');
+  const htmlReports = path.join(process.cwd(), '/e2e/reports/html');
+  if (!fs.existsSync(jsonReports)) {
+    mkdirp.sync(jsonReports);
+  }
+  if (!fs.existsSync(htmlReports)) {
+    mkdirp.sync(htmlReports);
+  }
+}
