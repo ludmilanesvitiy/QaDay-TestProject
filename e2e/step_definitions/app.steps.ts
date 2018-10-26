@@ -31,3 +31,7 @@ When('User click Go button', async() => {
 Then('User see main page as logged in user', async() => {
   return expect(await loginPage.brandingHeaderBlock.getText()).to.contain('Привіт, firstQA')
 });
+
+When('User have created 11 blog posts', async() => {
+return;
+});

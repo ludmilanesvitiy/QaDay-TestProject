@@ -1,4 +1,8 @@
 import { $, browser, by, element, ElementFinder, ExpectedConditions as EC } from 'protractor';
+import { HttpClient } from 'protractor-http-client';
+import { headersPost } from '../support/http.helper';
+import { safeJsonParse } from 'ngx-cookie';
+
 
 export class LoginPage {
   loginBtn: ElementFinder = $('.user_menu .first');
@@ -29,5 +33,17 @@ export class LoginPage {
 
   clickOnGo() {
     this.goBtn.click();
+  }
+
+  async createBlogPosts(amount: number) {
+    const http = new HttpClient('http://blog.i.ua');
+    const headers = await headersPost();
+
+    const responseCreateBlogPosts = await http.post('/note/add/', headers);
+
+    console.log('createBlogPost StatusCode: ' + responseCreateBlogPosts.statusCode);
+    console.log(safeJsonParse(responseCreateBlogPosts.body));
+
+    return responseCreateBlogPosts;
   }
 }

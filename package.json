@@ -17,6 +17,7 @@
     "cucumber": "4.2.1",
     "cucumber-html-reporter": "4.0.3",
     "dotenv": "4.0.0",
+    "ngx-cookie": "4.0.2",
     "protractor": "5.4.0",
     "protractor-cucumber-framework": "6.0.0",
     "protractor-element-extend": "2.1.0",
