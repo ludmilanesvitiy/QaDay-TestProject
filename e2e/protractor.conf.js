@@ -9,11 +9,11 @@ const options = {
   output: './e2e-reports/html/cucumber_reporter.html',
   ignoreBadJsonFile: true,
   reportSuiteAsScenarios: true,
-  metadata: process.env.SAUCE ? sauceConf : null
 };
 
 exports.config = {
   allScriptsTimeout: 11000,
+  baseUrl: 'https://github.com',
   specs: [
     '**/*.feature'
   ],
@@ -24,15 +24,13 @@ exports.config = {
   cucumberOpts: {
     format: 'json:e2e/reports/json/results.json',
     require: [
-      '**/*.steps.ts',
+      'step_definitions/*.steps.ts',
       'support/*.ts'
     ],
     tags: "~@Ignore",
   },
   framework: 'custom',
   frameworkPath: require.resolve('protractor-cucumber-framework'),
-  SELENIUM_PROMISE_MANAGER: 0,
-
 
   onPrepare: () => {
     require('ts-node').register({
